@@ -8,7 +8,7 @@ defmodule Meilisearch.Search do
 
   @doc """
   Search for documents matching a specific query in the given index.
-  ([ref.](https://docs.meilisearch.com/reference/api/search.html#search-in-an-index-with-post-route))
+  ([ref.](https://www.meilisearch.com/docs/reference/api/search#search-in-an-index-with-post))
 
   A `search_query` value of `nil` will send a placeholder query.
 
@@ -100,5 +100,47 @@ defmodule Meilisearch.Search do
       end
 
     HTTP.post_request("indexes/#{index_uid}/search", Enum.into(params, %{}))
+  end
+
+  @doc """
+  Does multiple searches at once in the given index.
+  ([ref.](https://www.meilisearch.com/docs/reference/api/multi_search))
+
+  Takes a list of queries that have the same structure as in the `search` function.
+
+  ## Examples
+
+      iex> Meilisearch.Search.multi_search([%{indexUid: "movies", q: "where art thou"}, %{indexUid: "movies", q: "nothing else matters"}])
+      {:ok, [%{
+        "hits" => [
+          %{
+            "id" => 2,
+            "tagline" => "They have a plan but not a clue",
+            "title" => "O' Brother Where Art Thou"
+          }
+        ],
+        "offset" => 0,
+        "limit" => 20,
+        "nbHits" => 1,
+        "exhaustiveNbHits" => false,
+        "processingTimeMs" => 17,
+        "query" => "where art thou"
+      },
+      %{
+        "hits" => [
+          %{
+        ],
+        "offset" => 0,
+        "limit" => 20,
+        "nbHits" => 0,
+        "exhaustiveNbHits" => false,
+        "processingTimeMs" => 16,
+        "query" => "nothing else matters"
+      }]}
+
+  """
+  @spec multi_search(any()) :: HTTP.response()
+  def multi_search(queries) do
+    HTTP.post_request("multi-search", %{queries: queries})
   end
 end
